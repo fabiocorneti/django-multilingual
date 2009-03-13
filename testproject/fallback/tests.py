@@ -1,6 +1,8 @@
 from django.test import TestCase
 import multilingual
 
+from multilingual import translation
+
 from testproject.fallback.models import Article
 from testproject.fallback.models import Comment
 
@@ -52,4 +54,15 @@ class FallbackTestCase(TestCase):
         self.assertEqual(a.content_en_any, 'zh-cn content 2')
         self.assertEqual(a.title_pl_any, 'pl title 2')
         self.assertEqual(a.content_pl_any, '')
-
+        
+        # enable fallback on default getters
+        from django.conf import settings
+        if getattr(settings, 'MULTILINGUAL_ENABLE_FALLBACK_ON_DEFAULT_GETTER', 
+            False):
+            a = Article.objects.get(title_zh_cn='zh-cn title 1')
+            self.assertEqual(a.title, 'zh-cn title 1')
+            self.assertEqual(a.content, 'zh-cn content 1')
+        else:
+            a = Article.objects.get(title_zh_cn='zh-cn title 1')
+            self.assertEqual(a.title, None)
+            self.assertEqual(a.content, None)
