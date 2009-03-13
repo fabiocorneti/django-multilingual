@@ -3,11 +3,13 @@ Support for models' internal Translation class.
 """
 
 ##TODO: this is messy and needs to be cleaned up
+from django.conf import settings
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.db.models import signals
 from django.db.models.base import ModelBase
+
 from multilingual.languages import *
 from multilingual.exceptions import TranslationDoesNotExist
 from multilingual.fields import TranslationForeignKey
@@ -215,8 +217,11 @@ class Translation:
 
                 # add the 'fname' proxy property that allows reads
                 # from and writing to the appropriate translation
+                enable_fallback_on_default_getter =  getattr(settings, 
+                    'MULTILINGUAL_ENABLE_FALLBACK_ON_DEFAULT_GETTER', False)
                 setattr(main_cls, fname,
-                        TranslatedFieldProxy(fname, fname, field))
+                        TranslatedFieldProxy(fname, fname, field,
+                            fallback=enable_fallback_on_default_getter))
 
                 # add the 'fname'_any fallback
                 setattr(main_cls, fname + FALLBACK_FIELD_SUFFIX,
